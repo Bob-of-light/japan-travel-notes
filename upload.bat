@@ -24,7 +24,7 @@ echo      有檔案變更。
 
 echo.
 set /p "MSG=請描述這次更新（直接按 Enter 用今天的時間）："
-if "%MSG%"=="" set "MSG=更新 %date% %time%"
+if "%MSG%"=="" set "MSG=更新 %DATE% %TIME:~0,5%"
 echo.
 echo  [3/4] 儲存變更： %MSG%
 git commit -m "%MSG%"
