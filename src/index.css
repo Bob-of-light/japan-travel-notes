@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC',
+    'Microsoft JhengHei', sans-serif;
+  background-color: #ffffff;
+  color: #111111;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+.dark body {
+  background-color: #0a0a0a;
+  color: #e5e5e5;
+}
+
+@layer utilities {
+  .bg-app {
+    @apply bg-white text-neutral-900;
+  }
+  .dark .bg-app {
+    @apply bg-neutral-950 text-neutral-200;
+  }
+  .bg-panel {
+    @apply bg-neutral-50 text-neutral-900;
+  }
+  .dark .bg-panel {
+    @apply bg-neutral-900 text-neutral-200;
+  }
+  .bg-raised {
+    @apply bg-white text-neutral-900;
+  }
+  .dark .bg-raised {
+    @apply bg-neutral-800 text-neutral-100;
+  }
+  .border-line {
+    @apply border-neutral-200;
+  }
+  .dark .border-line {
+    @apply border-neutral-800;
+  }
+  .text-muted {
+    @apply text-neutral-500;
+  }
+  .dark .text-muted {
+    @apply text-neutral-400;
+  }
+  .accent {
+    @apply text-sky-700;
+  }
+  .dark .accent {
+    @apply text-sky-300;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.35);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 120, 0.55);
+}
+
+textarea,
+input,
+select,
+button {
+  font: inherit;
+}
