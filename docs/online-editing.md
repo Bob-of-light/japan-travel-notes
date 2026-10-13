@@ -83,8 +83,26 @@ https://japan-travel-notes.vercel.app
 
 ```
 名稱：VITE_WRITE_API_URL
-值：  https://japan-travel-notes.vercel.app
+值：  https://japan-travel-notes-git-main-bob-of-light.vercel.app
 ```
+
+⚠️ **務必確認網址正確**
+
+`https://japan-travel-notes.vercel.app` 這個名字**已經被別人註冊**，
+填錯的話會連到別人的伺服器。
+
+確認方法：開 `你的網址/api/data`，應該回傳
+`{"online":true,"repo":"Bob-of-light/japan-travel-notes",...}`
+如果回 404 或跳到登入頁，就是不對。
+
+網址要從 Vercel 專案頁面的 **Domains** 分頁複製。
+
+### 3.1 關掉 Vercel Authentication（必要）
+
+專案 → Settings → **Deployment Protection** → 把 **Vercel Authentication 關掉**。
+
+沒有關的話所有請求（含 API）都會被丟到 Vercel 登入頁面，功能完全不能用。
+而且這項在免費方案是要付費的（每個專案每月 20 美元）。
 
 ### 4. 重新部署
 
