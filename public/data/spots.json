@@ -181,6 +181,26 @@
       "description": "CAPCOM周邊商品店",
       "transport": [],
       "updatedAt": "2026-10-13"
+    },
+    {
+      "id": "spot-mv6i58xslolx",
+      "name": "Takadanobaba Mikado Game Center",
+      "area": "高田馬場",
+      "categories": [
+        "訪聖地"
+      ],
+      "nameJa": "ミカド",
+      "mapQuery": "35.7127351,139.6272371",
+      "hours": "10:00–23:30",
+      "description": "各種大型框體的集合地",
+      "transport": [],
+      "images": [
+        {
+          "src": "images/spot-mv6i58xslolx/1.jpg",
+          "caption": ""
+        }
+      ],
+      "updatedAt": "2026-10-13"
     }
   ]
 }
