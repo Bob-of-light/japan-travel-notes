@@ -1,27 +1,36 @@
 import type { ThemePreference, ResolvedTheme } from '../hooks/useTheme';
+import type { EditMode } from '../hooks/useSpots';
 import OriginPicker from './OriginPicker';
-import { CloseIcon, MenuIcon, MoonIcon, SunIcon } from './icons';
+import { CloseIcon, LockIcon, MenuIcon, MoonIcon, PencilIcon, SunIcon } from './icons';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
-  editable: boolean;
+  editMode: EditMode;
   resolved: ResolvedTheme;
   onChangeTheme: (t: ThemePreference) => void;
   origin: string;
   originHints: string[];
   onChangeOrigin: (origin: string) => void;
+  onRequestPin: () => void;
 }
+
+const statusText: Record<EditMode, string> = {
+  offline: '唯讀模式：本機開啟 dev.bat 才能編輯',
+  locked: '線上模式：按右邊的鎖頭輸入密碼即可編輯',
+  unlocked: '編輯模式：修改會直接寫回 GitHub',
+};
 
 export default function Header({
   onToggleSidebar,
   sidebarOpen,
-  editable,
+  editMode,
   resolved,
   onChangeTheme,
   origin,
   originHints,
   onChangeOrigin,
+  onRequestPin,
 }: HeaderProps) {
   return (
     <header className="flex items-center gap-2 border-b border-line bg-panel px-3 py-2 sm:px-4 shrink-0">
@@ -39,11 +48,23 @@ export default function Header({
           日本旅遊筆記
         </h1>
         <p className="hidden sm:block text-[11px] sm:text-xs text-muted truncate">
-          {editable ? '編輯模式：修改會直接存檔' : '唯讀模式：本機開啟 dev.bat 才能編輯'}
+          {statusText[editMode]}
         </p>
       </div>
 
-      <OriginPicker origin={origin} hints={originHints} editable={editable} onChange={onChangeOrigin} />
+      {editMode === 'locked' && (
+        <button
+          type="button"
+          onClick={onRequestPin}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-line
+                     text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+        >
+          <LockIcon className="w-3.5 h-3.5" />
+          編輯
+        </button>
+      )}
+
+      <OriginPicker origin={origin} hints={originHints} editable={editMode !== 'offline'} onChange={onChangeOrigin} />
 
       <div className="flex items-center gap-1 p-0.5 rounded-full border border-line shrink-0">
         <button

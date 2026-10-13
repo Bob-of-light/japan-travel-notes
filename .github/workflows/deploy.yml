@@ -22,7 +22,18 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - name: 帶入線上寫入 API 網址
+        run: |
+          if [ -n "${{ vars.VITE_WRITE_API_URL }}" ]; then
+            echo "VITE_WRITE_API_URL 已設定，線上可直接編輯"
+          else
+            echo "::warning::尚未設定 VITE_WRITE_API_URL，線上版本為唯讀模式"
+          fi
       - run: npm run build
+        env:
+          # 線上寫入 API（Vercel）。留空則為唯讀模式。
+          # 在 Settings → Secrets and variables → Actions → Variables 設定
+          VITE_WRITE_API_URL: ${{ vars.VITE_WRITE_API_URL }}
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:

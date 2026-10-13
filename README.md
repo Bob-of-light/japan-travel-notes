@@ -214,17 +214,11 @@ Google 乘車規劃與 Yahoo!乘換連結。想寫詳細路線（搭哪條線、
 
 <https://github.com/Bob-of-light/japan-travel-notes/actions>
 
-**線上版本是唯讀的**
+**線上版本可以編輯嗎**
 
-GitHub Pages 是純靜態網站，沒有後端可以存檔，所以線上版本的
-「新增景點」和「修改」按鈕會停用（頁首有提示）。
-
-因此新增與修改都要在本機完成：
-
-```
-dev.bat  →  在網頁上新增／修改景點  →  存檔
-upload.bat  →  等 1～2 分鐘
-```
+預設是唯讀。若已設定 Vercel 後端（見 `docs/online-editing.md`），
+頁首會出現 🔒 按鈕，輸入密碼後就能在手機上直接新增／修改景點與上傳照片，
+約 1 分鐘後線上自動更新。
 
 **GitHub 帳號**
 

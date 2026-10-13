@@ -2,14 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSpots } from './hooks/useSpots';
 import { useTheme } from './hooks/useTheme';
 import { collectStationHints } from './utils/links';
-import type { IndexMode, Spot, SpotsData } from './types';
+import type { IndexMode, Spot } from './types';
 import Header from './components/Header';
+import PinDialog from './components/PinDialog';
 import Sidebar from './components/Sidebar';
 import SpotDetail from './components/SpotDetail';
 import SpotFormDialog from './components/SpotFormDialog';
 
 export default function App() {
-  const { data, editable, loading, error, updateSpot, addSpot, saveSettings } = useSpots();
+  const { data, editable, editMode, loading, error, unlock, updateSpot, addSpot, saveSettings } = useSpots();
   const { resolved, setPreference } = useTheme();
 
   const [mode, setMode] = useState<IndexMode>('category');
@@ -18,6 +19,7 @@ export default function App() {
   const [editing, setEditing] = useState<Spot | null>(null);
   const [creating, setCreating] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [askingPin, setAskingPin] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const origin = data.settings?.origin ?? '';
@@ -28,7 +30,7 @@ export default function App() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2600);
+    const t = setTimeout(() => setToast(null), 3200);
     return () => clearTimeout(t);
   }, [toast]);
 
@@ -47,6 +49,14 @@ export default function App() {
   const handleSelect = (spotId: string) => {
     setSelectedId(spotId);
     setSidebarOpen(false);
+  };
+
+  const guardEditable = (action: () => void) => {
+    if (editMode === 'unlocked' || editMode === 'offline') {
+      action();
+      return;
+    }
+    setAskingPin(true);
   };
 
   const handleChangeOrigin = useCallback(
@@ -68,7 +78,7 @@ export default function App() {
       if (isNew) await addSpot(spot);
       else await updateSpot(spot);
       setSelectedId(spot.id);
-      setToast(isNew ? `已新增「${spot.name}」` : '已儲存');
+      setToast(isNew ? `已新增「${spot.name}」，約 1 分鐘後線上更新` : '已儲存，約 1 分鐘後線上更新');
     },
     [addSpot, data.spots, updateSpot],
   );
@@ -78,12 +88,13 @@ export default function App() {
       <Header
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         sidebarOpen={sidebarOpen}
-        editable={editable}
+        editMode={editMode}
         resolved={resolved}
         onChangeTheme={setPreference}
         origin={origin}
         originHints={originHints}
         onChangeOrigin={handleChangeOrigin}
+        onRequestPin={() => setAskingPin(true)}
       />
 
       <div className="flex-1 flex min-h-0 relative">
@@ -104,10 +115,7 @@ export default function App() {
               selectedId={selectedId}
               onSelect={handleSelect}
               editable={editable}
-              onCreate={() => {
-                setCreating(true);
-                setSidebarOpen(false);
-              }}
+              onCreate={() => guardEditable(() => setCreating(true))}
             />
           )}
         </aside>
@@ -129,7 +137,7 @@ export default function App() {
               spot={selected}
               editable={editable}
               origin={origin}
-              onEdit={() => setEditing(selected)}
+              onEdit={() => guardEditable(() => setEditing(selected))}
             />
           )}
           {!error && !selected && !loading && (
@@ -160,11 +168,23 @@ export default function App() {
         />
       )}
 
+      {askingPin && (
+        <PinDialog
+          online={editMode === 'locked'}
+          onUnlock={() => {
+            unlock();
+            setAskingPin(false);
+            setToast('已解鎖，可以編輯了');
+          }}
+          onCancel={() => setAskingPin(false)}
+        />
+      )}
+
       {toast && (
         <div
           role="status"
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg
-                     bg-neutral-900 text-neutral-50 text-sm shadow-lg dark:bg-neutral-100 dark:text-neutral-900"
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg max-w-[90vw]
+                     text-center bg-neutral-900 text-neutral-50 text-sm shadow-lg dark:bg-neutral-100 dark:text-neutral-900"
         >
           {toast}
         </div>
@@ -172,5 +192,3 @@ export default function App() {
     </div>
   );
 }
-
-export type { SpotsData };
