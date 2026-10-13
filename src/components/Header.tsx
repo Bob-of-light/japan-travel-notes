@@ -1,4 +1,5 @@
 import type { ThemePreference, ResolvedTheme } from '../hooks/useTheme';
+import OriginPicker from './OriginPicker';
 import { CloseIcon, MenuIcon, MoonIcon, SunIcon } from './icons';
 
 interface HeaderProps {
@@ -7,6 +8,9 @@ interface HeaderProps {
   editable: boolean;
   resolved: ResolvedTheme;
   onChangeTheme: (t: ThemePreference) => void;
+  origin: string;
+  originHints: string[];
+  onChangeOrigin: (origin: string) => void;
 }
 
 export default function Header({
@@ -15,6 +19,9 @@ export default function Header({
   editable,
   resolved,
   onChangeTheme,
+  origin,
+  originHints,
+  onChangeOrigin,
 }: HeaderProps) {
   return (
     <header className="flex items-center gap-2 border-b border-line bg-panel px-3 py-2 sm:px-4 shrink-0">
@@ -31,12 +38,14 @@ export default function Header({
         <h1 className="text-base sm:text-lg font-semibold tracking-wide truncate">
           日本旅遊筆記
         </h1>
-        <p className="text-[11px] sm:text-xs text-muted truncate">
+        <p className="hidden sm:block text-[11px] sm:text-xs text-muted truncate">
           {editable ? '編輯模式：修改會直接存檔' : '唯讀模式：本機開啟 dev.bat 才能編輯'}
         </p>
       </div>
 
-      <div className="flex items-center gap-1 p-0.5 rounded-full border border-line">
+      <OriginPicker origin={origin} hints={originHints} editable={editable} onChange={onChangeOrigin} />
+
+      <div className="flex items-center gap-1 p-0.5 rounded-full border border-line shrink-0">
         <button
           type="button"
           onClick={() => onChangeTheme('light')}

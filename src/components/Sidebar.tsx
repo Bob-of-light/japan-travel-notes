@@ -12,6 +12,8 @@ interface SidebarProps {
   onKeywordChange: (value: string) => void;
   selectedId: string | null;
   onSelect: (spotId: string) => void;
+  editable: boolean;
+  onCreate: () => void;
 }
 
 export default function Sidebar({
@@ -22,12 +24,25 @@ export default function Sidebar({
   onKeywordChange,
   selectedId,
   onSelect,
+  editable,
+  onCreate,
 }: SidebarProps) {
   const tree = useMemo(() => buildIndex(data, mode, keyword), [data, mode, keyword]);
 
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="p-3 border-b border-line space-y-2 shrink-0">
+        <button
+          type="button"
+          onClick={onCreate}
+          disabled={!editable}
+          title={editable ? '新增一個景點' : '唯讀模式：本機開啟 dev.bat 才能新增'}
+          className="w-full py-2 rounded-md text-sm font-medium bg-sky-700 text-white
+                     hover:bg-sky-800 transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
+        >
+          ＋ 新增景點
+        </button>
+
         <div className="flex p-0.5 rounded-lg bg-neutral-200/60 dark:bg-neutral-800/70">
           {(
             [

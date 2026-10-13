@@ -1,4 +1,5 @@
 import type { Spot, TransportLeg } from '../types';
+import { buildMapQuery } from './parseMapLink';
 
 const enc = encodeURIComponent;
 
@@ -9,20 +10,23 @@ export function assetUrl(src: string): string {
   return `${base}${src.replace(/^\//, '')}`;
 }
 
+/** 地圖優先用座標，沒有就用「名稱＋地名」讓 Google 自己找 */
 export function mapEmbedUrl(spot: Spot): string {
-  const q = spot.mapQuery || spot.nameJa || spot.name || spot.address || '';
-  const zoom = 16;
-  return `https://maps.google.com/maps?q=${enc(q)}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+  const query = buildMapQuery(spot);
+  return `https://maps.google.com/maps?q=${enc(query)}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
 }
 
 export function mapSearchUrl(spot: Spot): string {
-  const q = spot.mapQuery || spot.nameJa || spot.name || spot.address || '';
-  return `https://www.google.com/maps/search/?api=1&query=${enc(q)}`;
+  return `https://www.google.com/maps/search/?api=1&query=${enc(buildMapQuery(spot))}`;
 }
 
-/** Google Maps 乘車（大眾運輸）路線規劃 */
+/** 路線規劃用「文字地點」而不是座標，Google／Yahoo 都能處理 */
+export function spotDestination(spot: Spot): string {
+  return spot.nameJa || spot.name || spot.mapQuery || spot.address || '';
+}
+
 export function googleDirUrl(leg: TransportLeg, spot: Spot): string {
-  const destination = leg.toStation || spot.mapQuery || spot.nameJa || spot.name;
+  const destination = leg.toStation || spotDestination(spot);
   const origin = leg.fromStation;
   if (!origin) {
     return `https://www.google.com/maps/dir/?api=1&destination=${enc(destination)}&travelmode=transit`;
@@ -35,14 +39,32 @@ export function googleDirUrl(leg: TransportLeg, spot: Spot): string {
 /** Yahoo!乘換案内：即時到站、時刻表、遅延資訊 */
 export function yahooTransitUrl(leg: TransportLeg, spot: Spot): string | null {
   const from = leg.fromStation?.replace(/站$/, '');
-  const to = (leg.toStation || spot.mapQuery || spot.nameJa || spot.name).replace(/站$/, '');
+  const to = (leg.toStation || spotDestination(spot)).replace(/站$/, '');
   if (!from || !to) return null;
   return `https://transit.yahoo.co.jp/search/result/${enc(from)}-${enc(to)}`;
 }
 
-export function transportSummary(leg: TransportLeg): string {
-  const parts: string[] = [];
-  if (leg.line) parts.push(leg.line);
-  if (leg.mode && !leg.line?.includes(leg.mode)) parts.push(leg.mode);
-  return parts.join(' ');
+/** 只知道出發地與目的地時產生查詢連結（沒有詳細路線時用） */
+export function originGoogleDirUrl(origin: string, spot: Spot): string {
+  return `https://www.google.com/maps/dir/?api=1&origin=${enc(origin)}&destination=${enc(
+    spotDestination(spot),
+  )}&travelmode=transit`;
+}
+
+export function originYahooUrl(origin: string, spot: Spot): string {
+  const from = origin.replace(/站$/, '');
+  const to = spotDestination(spot).replace(/站$/, '');
+  return `https://transit.yahoo.co.jp/search/result/${enc(from)}-${enc(to)}`;
+}
+
+/** 從資料裡撈出出現過的車站地名，當出發地的輸入建議 */
+export function collectStationHints(spots: Spot[]): string[] {
+  const set = new Set<string>();
+  for (const spot of spots) {
+    for (const leg of spot.transport ?? []) {
+      if (leg.fromStation) set.add(leg.fromStation);
+      if (leg.toStation) set.add(leg.toStation);
+    }
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
 }

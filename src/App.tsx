@@ -1,35 +1,77 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSpots } from './hooks/useSpots';
 import { useTheme } from './hooks/useTheme';
-import type { IndexMode, Spot } from './types';
+import { collectStationHints } from './utils/links';
+import type { IndexMode, Spot, SpotsData } from './types';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import SpotDetail from './components/SpotDetail';
-import EditSpotDialog from './components/EditSpotDialog';
+import SpotFormDialog from './components/SpotFormDialog';
 
 export default function App() {
-  const { data, editable, loading, error, updateSpot } = useSpots();
+  const { data, editable, loading, error, updateSpot, addSpot, saveSettings } = useSpots();
   const { resolved, setPreference } = useTheme();
 
   const [mode, setMode] = useState<IndexMode>('category');
   const [keyword, setKeyword] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Spot | null>(null);
+  const [creating, setCreating] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const origin = data.settings?.origin ?? '';
 
   useEffect(() => {
     if (!selectedId && data.spots.length > 0) setSelectedId(data.spots[0].id);
   }, [data.spots, selectedId]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const selected = useMemo(
     () => data.spots.find((s) => s.id === selectedId) ?? null,
     [data.spots, selectedId],
   );
 
+  const knownAreas = useMemo(() => {
+    const set = new Set(data.spots.map((s) => s.area).filter(Boolean));
+    return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+  }, [data.spots]);
+
+  const originHints = useMemo(() => collectStationHints(data.spots), [data.spots]);
+
   const handleSelect = (spotId: string) => {
     setSelectedId(spotId);
     setSidebarOpen(false);
   };
+
+  const handleChangeOrigin = useCallback(
+    async (next: string) => {
+      if (next === origin) return;
+      try {
+        await saveSettings({ ...data.settings, origin: next });
+        setToast(next ? `出發地已設為「${next}」` : '已清除出發地');
+      } catch (err) {
+        setToast(err instanceof Error ? err.message : '出發地儲存失敗');
+      }
+    },
+    [data.settings, origin, saveSettings],
+  );
+
+  const handleSaveSpot = useCallback(
+    async (spot: Spot) => {
+      const isNew = !data.spots.some((s) => s.id === spot.id);
+      if (isNew) await addSpot(spot);
+      else await updateSpot(spot);
+      setSelectedId(spot.id);
+      setToast(isNew ? `已新增「${spot.name}」` : '已儲存');
+    },
+    [addSpot, data.spots, updateSpot],
+  );
 
   return (
     <div className="bg-app h-full flex flex-col">
@@ -39,6 +81,9 @@ export default function App() {
         editable={editable}
         resolved={resolved}
         onChangeTheme={setPreference}
+        origin={origin}
+        originHints={originHints}
+        onChangeOrigin={handleChangeOrigin}
       />
 
       <div className="flex-1 flex min-h-0 relative">
@@ -58,6 +103,11 @@ export default function App() {
               onKeywordChange={setKeyword}
               selectedId={selectedId}
               onSelect={handleSelect}
+              editable={editable}
+              onCreate={() => {
+                setCreating(true);
+                setSidebarOpen(false);
+              }}
             />
           )}
         </aside>
@@ -78,6 +128,7 @@ export default function App() {
             <SpotDetail
               spot={selected}
               editable={editable}
+              origin={origin}
               onEdit={() => setEditing(selected)}
             />
           )}
@@ -91,18 +142,35 @@ export default function App() {
         </main>
       </div>
 
-      {editing && (
-        <EditSpotDialog
+      {(creating || editing) && (
+        <SpotFormDialog
           spot={editing}
           categories={data.categories}
+          knownAreas={knownAreas}
           editable={editable}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
           onSave={async (spot) => {
-            await updateSpot(spot);
+            await handleSaveSpot(spot);
+            setCreating(false);
             setEditing(null);
           }}
         />
       )}
+
+      {toast && (
+        <div
+          role="status"
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg
+                     bg-neutral-900 text-neutral-50 text-sm shadow-lg dark:bg-neutral-100 dark:text-neutral-900"
+        >
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
+
+export type { SpotsData };

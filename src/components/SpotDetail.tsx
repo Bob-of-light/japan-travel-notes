@@ -8,11 +8,13 @@ import { ExternalIcon, PencilIcon, PinIcon } from './icons';
 interface SpotDetailProps {
   spot: Spot;
   editable: boolean;
+  origin: string;
   onEdit: () => void;
 }
 
-export default function SpotDetail({ spot, editable, onEdit }: SpotDetailProps) {
+export default function SpotDetail({ spot, editable, origin, onEdit }: SpotDetailProps) {
   const paragraphs = (spot.description ?? '').split(/\n{2,}/).filter(Boolean);
+  const showMap = !spot.hideMap;
 
   return (
     <article className="max-w-3xl mx-auto px-4 sm:px-6 py-5 sm:py-8 space-y-7">
@@ -74,14 +76,16 @@ export default function SpotDetail({ spot, editable, onEdit }: SpotDetailProps) 
         )}
 
         <div className="flex flex-wrap gap-3 text-sm">
-          <a
-            href={mapSearchUrl(spot)}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 accent hover:underline"
-          >
-            在 Google 地圖開啟 <ExternalIcon />
-          </a>
+          {showMap && (
+            <a
+              href={mapSearchUrl(spot)}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 accent hover:underline"
+            >
+              在 Google 地圖開啟 <ExternalIcon />
+            </a>
+          )}
           {spot.website && (
             <a
               href={spot.website}
@@ -94,12 +98,12 @@ export default function SpotDetail({ spot, editable, onEdit }: SpotDetailProps) 
           )}
         </div>
 
-        <MapEmbed spot={spot} />
+        {showMap && <MapEmbed spot={spot} />}
       </section>
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold tracking-wide text-muted">交通方式</h3>
-        <TransportList legs={spot.transport ?? []} spot={spot} />
+        <TransportList legs={spot.transport ?? []} spot={spot} origin={origin} />
       </section>
 
       <section className="space-y-3">

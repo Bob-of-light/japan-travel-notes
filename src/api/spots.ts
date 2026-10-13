@@ -1,4 +1,4 @@
-import type { SpotsData } from '../types';
+import type { GeocodeAddress, ParsedMapLink, SpotsData } from '../types';
 
 interface SpotsResponse {
   data: SpotsData;
@@ -36,3 +36,43 @@ export async function saveSpots(data: SpotsData): Promise<SpotsData> {
   }
   return (json as SpotsResponse).data;
 }
+
+/** 上傳一張已經壓縮好的 JPEG */
+export async function uploadImage(spotId: string, name: string, blob: Blob): Promise<string> {
+  const res = await fetch(
+    `/api/upload?spotId=${encodeURIComponent(spotId)}&name=${encodeURIComponent(name)}`,
+    { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob },
+  );
+
+  const json = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(json?.error ?? '圖片上傳失敗');
+  return json.src as string;
+}
+
+/** 跟隨 Google Maps 短網址的轉址 */
+export async function resolveMapUrl(url: string): Promise<string> {
+  const res = await fetch('/api/resolve-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+
+  const json = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(json?.error ?? '短網址解析失敗');
+  return json.url as string;
+}
+
+/** 座標反查日文地址 */
+export async function reverseGeocode(lat: number, lon: number): Promise<GeocodeAddress> {
+  const res = await fetch('/api/geocode', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lat, lon }),
+  });
+
+  const json = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(json?.error ?? '地址查詢失敗');
+  return json.address as GeocodeAddress;
+}
+
+export type { ParsedMapLink };
