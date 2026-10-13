@@ -166,6 +166,21 @@
       "hours": "11:00～20:00",
       "website": "https://www.hardoff.co.jp/shop/detail/?p=101082",
       "updatedAt": "2026-10-13"
+    },
+    {
+      "id": "spot-mv6htedujs2o",
+      "name": "CAPCOM STORE TOKYO",
+      "area": "澀谷",
+      "categories": [
+        "探店去"
+      ],
+      "nameJa": "CAPCOM STORE TOKYO",
+      "address": "〒150-8377 東京都渋谷区宇田川町15-1(渋谷パルコ)",
+      "mapQuery": "35.6619523,139.6989013",
+      "website": "https://www.capcom.co.jp/amusement/brands/capcomstore/tokyo/",
+      "description": "CAPCOM周邊商品店",
+      "transport": [],
+      "updatedAt": "2026-10-13"
     }
   ]
 }
