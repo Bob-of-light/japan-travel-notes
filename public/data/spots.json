@@ -148,6 +148,23 @@
       "closed": "無",
       "phone": "03-3258-7096",
       "website": "https://www.instagram.com/surugaya_game/"
+    },
+    {
+      "id": "spot-mv6g60liraan",
+      "name": "Hard Off Labo吉祥寺",
+      "area": "吉祥寺",
+      "categories": [
+        "收電玩",
+        "買模型"
+      ],
+      "nameJa": "Hard Off Labo吉祥寺",
+      "mapQuery": "35.706844,139.580747",
+      "description": "從 JR 吉祥寺站北口步行約 7 分鐘。\n在 Sunroad 商店街盡頭左手邊。\n馬路對面。沿著五日市街道。\n在 Mode Off 吉祥寺店旁邊。Assorti 吉祥寺 Est 大樓 1 樓。",
+      "transport": [],
+      "hours": "11:00～20:00",
+      "website": "https://www.hardoff.co.jp/shop/detail/?p=101082",
+      "hideMap": true,
+      "updatedAt": "2026-10-13"
     }
   ]
 }
