@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { resolveMapUrl, reverseGeocode, uploadImage } from '../api/spots';
-import { assetUrl } from '../utils/links';
+import { assetUrl, mapEmbedUrl } from '../utils/links';
 import { compressImage, formatBytes } from '../utils/imageCompress';
 import { buildMapQuery, parseMapLink } from '../utils/parseMapLink';
 import type { Spot, SpotImage, TransportLeg } from '../types';
@@ -54,7 +54,11 @@ export default function SpotFormDialog({
 
   const [mapUrl, setMapUrl] = useState('');
   const [mapBusy, setMapBusy] = useState(false);
+  const [pendingMap, setPendingMap] = useState<{ coord?: string; query?: string; name?: string } | null>(null);
+  const [detectedAddress, setDetectedAddress] = useState<string | null>(null);
+  const [syncAddress, setSyncAddress] = useState(true);
   const [addressTouched, setAddressTouched] = useState(isNew);
+  const [showMapPreview, setShowMapPreview] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [categoryHint, setCategoryHint] = useState<string | null>(null);
 
@@ -130,13 +134,16 @@ export default function SpotFormDialog({
     setExistingImages((list) => list.map((i) => (i.src === src ? { ...i, caption } : i)));
 
   /* ---------- Google Maps 連結 ---------- */
+  /** 解析連結，結果放進 pendingMap（不直接改 draft，等使用者按套用） */
   const handleMapUrl = async (value: string) => {
     setMapUrl(value);
     setNotice(null);
+    setDetectedAddress(null);
     if (!value.trim()) return;
 
     const parsed = parseMapLink(value);
     if (!parsed) {
+      setPendingMap(null);
       setNotice('這看起來不是 Google Maps 的連結。如果沒貼也可以，地圖會用「名稱＋地名」搜尋。');
       return;
     }
@@ -155,27 +162,54 @@ export default function SpotFormDialog({
       }
     }
 
-    const changes: Partial<Spot> = {};
-    if (result.coord) changes.mapQuery = result.coord;
-    else if (result.query) changes.mapQuery = result.query;
-    if (result.name) {
-      changes.name = result.name;
-      if (!draft.nameJa) changes.nameJa = result.name;
-    }
-    if (Object.keys(changes).length) patch(changes);
+    const next = { coord: result.coord, query: result.query, name: result.name };
+    setPendingMap(next);
 
-    if (result.coord && !addressTouched) {
+    if (next.coord) {
       setMapBusy(true);
-      const [lat, lon] = result.coord.split(',').map(Number);
+      const [lat, lon] = next.coord.split(',').map(Number);
       try {
         const address = await reverseGeocode(lat, lon);
-        if (!addressTouched) patch({ address: address.formatted });
+        setDetectedAddress(address.formatted);
       } catch {
-        // 查不到就算了，地址留空讓使用者自己打
+        // 查不到就留空，地址由使用者自行填寫
       } finally {
         setMapBusy(false);
       }
     }
+  };
+
+  /** 把解析結果寫進 draft */
+  const applyPendingMap = () => {
+    if (!pendingMap) return;
+
+    const changes: Partial<Spot> = {};
+    if (pendingMap.coord) changes.mapQuery = pendingMap.coord;
+    else if (pendingMap.query) changes.mapQuery = pendingMap.query;
+    if (pendingMap.name && isNew) {
+      changes.name = pendingMap.name;
+      if (!draft.nameJa) changes.nameJa = pendingMap.name;
+    }
+    if (syncAddress && detectedAddress) changes.address = detectedAddress;
+    patch(changes);
+
+    setNotice(
+      pendingMap.coord
+        ? `已套用座標 ${pendingMap.coord}`
+        : `已套用搜尋字串「${pendingMap.query}」`,
+    );
+    setPendingMap(null);
+    setDetectedAddress(null);
+    setMapUrl('');
+  };
+
+  /** 清除定位，改回用「名稱＋地名」自動搜尋 */
+  const clearMapQuery = () => {
+    patch({ mapQuery: undefined });
+    setMapUrl('');
+    setPendingMap(null);
+    setDetectedAddress(null);
+    setNotice('已清除定位，地圖改用「名稱＋地名」自動搜尋');
   };
 
   /* ---------- 照片 ---------- */
@@ -283,6 +317,15 @@ export default function SpotFormDialog({
 
   const mapPreview = useMemo(() => (draft.mapQuery ? buildMapQuery(draft) : ''), [draft]);
 
+  const currentMapSource = useMemo(() => {
+    if (draft.mapQuery) {
+      return /^-?\d{1,3}\.\d+,\s*-?\d{1,3}\.\d+$/.test(draft.mapQuery)
+        ? `使用座標 ${draft.mapQuery}`
+        : `使用搜尋字串「${draft.mapQuery}」`;
+    }
+    return `自動以「${buildMapQuery(draft)}」搜尋`;
+  }, [draft]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={() => !busy && onCancel()} aria-hidden />
@@ -350,32 +393,113 @@ export default function SpotFormDialog({
             </div>
           )}
 
-          {isNew && (
-            <div className="space-y-2">
-              <label className={label} htmlFor="f-mapurl">
-                貼上 Google Maps 連結（可留空，會用「名稱＋地名」自動搜尋）
-              </label>
-              <div className="relative">
-                <SearchIcon className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+          <div className="space-y-2 rounded-lg border border-line bg-raised p-3">
+            <div className="flex items-start justify-between gap-2">
+              <span className={label}>地圖定位</span>
+              <label className="flex items-center gap-1.5 text-xs text-muted cursor-pointer select-none shrink-0">
                 <input
-                  id="f-mapurl"
-                  className={`${input} pl-8`}
-                  placeholder="https://maps.app.goo.gl/… 或 https://www.google.com/maps/place/…"
-                  value={mapUrl}
-                  onChange={(e) => handleMapUrl(e.target.value)}
-                  disabled={mapBusy}
+                  type="checkbox"
+                  checked={draft.hideMap ?? false}
+                  onChange={(e) => patch({ hideMap: e.target.checked || undefined })}
+                  className="w-3.5 h-3.5 accent-sky-600"
                 />
-              </div>
-              {mapBusy && <p className="text-xs text-muted">讀取連結中…</p>}
-              {!mapBusy && mapPreview && (
-                <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                  ✓ 已取得定位資訊{mapPreview.includes(',') ? `（座標 ${mapPreview}）` : ''}
-                  {draft.address ? '，並自動填入地址' : ''}
-                </p>
-              )}
-              {notice && <p className="text-xs text-amber-700 dark:text-amber-400">{notice}</p>}
+                不顯示地圖
+              </label>
             </div>
-          )}
+
+            {!draft.hideMap && (
+              <>
+                <p className="text-xs text-muted leading-relaxed">
+                  目前：{currentMapSource}
+                </p>
+
+                <div className="relative">
+                  <SearchIcon className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    id="f-mapurl"
+                    className={`${input} pl-8`}
+                    placeholder={isNew ? 'https://maps.app.goo.gl/…（可留空）' : '貼上新的 Google Maps 連結來更換位置'}
+                    value={mapUrl}
+                    onChange={(e) => handleMapUrl(e.target.value)}
+                    disabled={mapBusy}
+                  />
+                </div>
+
+                {mapBusy && <p className="text-xs text-muted">讀取連結中…</p>}
+
+                {pendingMap && !mapBusy && (
+                  <div className="space-y-1.5 rounded-md border border-emerald-300 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 p-2.5">
+                    <p className="text-xs text-emerald-800 dark:text-emerald-300">
+                      ✓ 讀取到新定位
+                      {pendingMap.coord ? `（座標 ${pendingMap.coord}）` : `（${pendingMap.query}）`}
+                    </p>
+                    {detectedAddress && (
+                      <label className="flex items-start gap-1.5 text-xs text-muted cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={syncAddress}
+                          onChange={(e) => setSyncAddress(e.target.checked)}
+                          className="w-3.5 h-3.5 mt-0.5 accent-sky-600 shrink-0"
+                        />
+                        <span>
+                          同時把地址改成
+                          <span className="block text-neutral-700 dark:text-neutral-300">
+                            {detectedAddress}
+                          </span>
+                        </span>
+                      </label>
+                    )}
+                    <button
+                      type="button"
+                      onClick={applyPendingMap}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md
+                                 bg-sky-700 text-white text-xs hover:bg-sky-800"
+                    >
+                      <SaveIcon className="w-3.5 h-3.5" />
+                      套用這個位置
+                    </button>
+                  </div>
+                )}
+
+                {draft.mapQuery && (
+                  <button
+                    type="button"
+                    onClick={clearMapQuery}
+                    className="text-xs text-muted hover:text-current hover:underline"
+                  >
+                    清除定位，改用「名稱＋地名」自動搜尋
+                  </button>
+                )}
+
+                {notice && <p className="text-xs text-amber-700 dark:text-amber-400">{notice}</p>}
+
+                <button
+                  type="button"
+                  onClick={() => setShowMapPreview((v) => !v)}
+                  className="text-xs accent hover:underline"
+                >
+                  {showMapPreview ? '收起地圖預覽' : '預覽地圖確認位置'}
+                </button>
+
+                {showMapPreview && !draft.hideMap && (
+                  <div className="overflow-hidden rounded-md border border-line">
+                    <iframe
+                      key={mapPreview}
+                      title="地圖預覽"
+                      src={mapEmbedUrl(draft)}
+                      className="w-full h-48"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {draft.hideMap && (
+              <p className="text-xs text-muted">這個景點不會顯示地圖。</p>
+            )}
+          </div>
 
           {!isNew && (
             <div className="grid sm:grid-cols-2 gap-3">
@@ -476,7 +600,7 @@ export default function SpotFormDialog({
               <input
                 id="f-address"
                 className={input}
-                placeholder={addressTouched ? '' : '貼上 Maps 連結會自動填入'}
+                placeholder="可以在上面的地圖定位貼連結自動填入"
                 value={draft.address ?? ''}
                 onChange={(e) => {
                   setAddressTouched(true);
@@ -488,18 +612,6 @@ export default function SpotFormDialog({
                   ⚠ 這是自動查出來的，請確認是否正確
                 </p>
               )}
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={draft.hideMap ?? false}
-                  onChange={(e) => patch({ hideMap: e.target.checked || undefined })}
-                  className="w-4 h-4 accent-sky-600"
-                />
-                不顯示地圖
-              </label>
             </div>
 
             <div>
