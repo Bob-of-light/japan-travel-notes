@@ -117,17 +117,20 @@ async function saveRemote(data: SpotsData, message?: string): Promise<SpotsData>
   return data;
 }
 
-/** 驗證 PIN 是否正確（不寫入任何資料） */
+/**
+ * 驗證 PIN 是否正確。
+ * ⚠️ 絕對不能帶任何會被寫入的資料，這裡用 dryRun 讓伺服器只驗證不寫檔。
+ */
 export async function verifyPin(pin: string): Promise<boolean> {
-  const res = await apiFetch('/api/data', {
+  const res = await fetch(`${WRITE_API}/api/data?dryRun=1`, {
     method: 'POST',
-    headers: { 'X-Pin': pin },
-    body: JSON.stringify({ data: { version: 1, categories: [], spots: [] }, message: 'test' }),
+    headers: { 'Content-Type': 'application/json', 'X-Pin': pin },
+    body: JSON.stringify({ dryRun: true }),
   }).catch(() => null);
 
-  // 401 代表 PIN 不對；其他錯誤（403/409/500）代表 PIN 對了，只是這次資料不合法
   if (!res) return false;
-  return res.status !== 401 && res.status !== 503;
+  // 200 = 密碼正確；401 = 密碼錯誤
+  return res.status === 200;
 }
 
 export async function uploadImage(spotId: string, name: string, blob: Blob): Promise<string> {
