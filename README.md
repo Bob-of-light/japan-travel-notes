@@ -8,11 +8,11 @@
 | 檔案 | 用途 |
 | --- | --- |
 | `dev.bat` | **開發模式**：邊改邊看，開 http://localhost:5173，改完自動重新整理 |
-| `build.bat` | 打包成 `dist/`，只負責建置 |
-| `start.bat` | 建置 + 啟動伺服器，開 http://localhost:3001 |
-| `package-for-upload.bat` | 上傳到 GitHub Pages 的步驟說明與檔案清單 |
+| `upload.bat` | **一鍵上傳**：建置檢查 + git 提交 + 推送，之後等 1-2 分鐘自動部署 |
+| `build.bat` | 只負責建置，不上傳 |
+| `start.bat` | 建置 + 啟動本機伺服器，開 http://localhost:3001 |
 
-日常開發請用 `dev.bat`。要給別人看或放在電腦上跑時用 `start.bat`。
+日常開發請用 `dev.bat`，要更新線上網站就跑 `upload.bat`。
 
 > 因為要部署到 GitHub Pages，路徑帶 `/japan-travel-notes/` 前綴。
 > `dev.bat` 與 `start.bat` 的伺服器都會自動處理這個前綴，
@@ -194,44 +194,46 @@ Google 乘車規劃與 Yahoo!乘換連結。想寫詳細路線（搭哪條線、
 `vite.config.ts` 的 `base` 與 `server/server.mjs` 的 `BASE` 必須一致，
 改倉庫名稱時兩個地方都要跟著改。
 
-**首次部署**
+**更新線上網站：執行 `upload.bat` 就好了**
 
-1. 在 <https://github.com/new> 建立倉庫
-   - 名稱：`japan-travel-notes`
-   - 可見性：**Public**（免費 Pages 方案必須公開）
-   - 不要勾「Add a README file」
-2. 執行 `build.bat` 確認建置沒有錯誤
-3. 開啟 <https://github.com/bob-of-light/japan-travel-notes/upload/main>
-4. 在專案資料夾按 Ctrl 選取 20 個項目拖到頁面上（清單見
-   `package-for-upload.bat`）
-5. 捲到最下面按 Commit changes
-6. 等 1～2 分鐘
-
-> **不打包 zip。** GitHub 的網頁上傳不會自動解壓縮 zip，
-> 直接把資料夾和檔案拖上去就好。
-
-**上傳後必查**
-
-| 檢查 | 缺少會怎樣 |
-| --- | --- |
-| `.github\workflows\deploy.yml` | 不會自動部署，網址 404 |
-| `public\data\spots.json` | 沒有任何景點 |
-| `public\images\*.jpg` | 照片破圖 |
-
-dot 開頭的檔案在拖曳時最容易被漏掉，務必確認。
-
-如果一直沒有部署：Settings → Pages → Source 選 **GitHub Actions**。
-
-**之後每次更新**
+它會依序做四件事：建置檢查 → `git add` → 提示你輸入更新說明並 commit →
+`git push`。推送後 GitHub Actions 會自動重新部署，等 1～2 分鐘就好。
 
 ```
-dev.bat  →  在網頁上新增／修改景點 →  存檔
-build.bat  →  確認沒有錯誤
-開 /upload/main  →  重新拖 20 個項目  →  Commit changes  →  等 1～2 分鐘
+[1/4] 檢查建置...
+[2/4] 整理變更內容...
+      請描述這次更新（直接按 Enter 用今天的時間）：
+[3/4] 儲存變更： ...
+[4/4] 上傳到 GitHub...
 ```
 
-線上版本是唯讀的，所以**新增與修改都要在本機完成再上傳**。
+> 第一次執行時，因為本機與 GitHub 的歷史不同，會用強制覆蓋的方式對齊一次；
+> 之後都是一般的 push。`.git\push-done` 這個標記檔記錄了對齊是否已完成。
 
-> 想改成用 `git push` 會更省事（不用每次重新拖檔），
-> 但本機與 GitHub 的歷史已經分岔（首次是網頁上傳），
-> 需要的話再說。
+**上傳後想看進度**
+
+<https://github.com/Bob-of-light/japan-travel-notes/actions>
+
+**線上版本是唯讀的**
+
+GitHub Pages 是純靜態網站，沒有後端可以存檔，所以線上版本的
+「新增景點」和「修改」按鈕會停用（頁首有提示）。
+
+因此新增與修改都要在本機完成：
+
+```
+dev.bat  →  在網頁上新增／修改景點  →  存檔
+upload.bat  →  等 1～2 分鐘
+```
+
+**GitHub 帳號**
+
+本機的 git 憑證原本是 `bobyubobyu`，但這個倉庫屬於 `Bob-of-light`。
+因此 remote 網址寫成：
+
+```
+https://Bob-of-light@github.com/Bob-of-light/japan-travel-notes.git
+```
+
+這樣只讓這個倉庫使用 `Bob-of-light` 的憑證，不影響你在這台電腦上的
+其他專案。若換電腦或清除憑證，第一次 push 時瀏覽器會跳出登入視窗。
