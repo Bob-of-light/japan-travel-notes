@@ -55,6 +55,8 @@ export default function SpotFormDialog({
   const [mapUrl, setMapUrl] = useState('');
   const [mapBusy, setMapBusy] = useState(false);
   const [addressTouched, setAddressTouched] = useState(isNew);
+  const [newCategory, setNewCategory] = useState('');
+  const [categoryHint, setCategoryHint] = useState<string | null>(null);
 
   const [existingImages, setExistingImages] = useState<SpotImage[]>(
     () => (spot?.images ?? []).map((i) => ({ ...i })),
@@ -99,6 +101,25 @@ export default function SpotFormDialog({
         ? d.categories.filter((c) => c !== cat)
         : [...d.categories, cat],
     }));
+
+  /** 輸入新的大項分類，已存在就直接勾選 */
+  const addCategory = () => {
+    const name = newCategory.trim();
+    if (!name) return;
+
+    if (name.length > 12) {
+      setCategoryHint('分類名稱請控制在 12 個字以內');
+      return;
+    }
+    setDraft((d) => ({
+      ...d,
+      categories: d.categories.includes(name) ? d.categories : [...d.categories, name],
+    }));
+    setCategoryHint(
+      categories.includes(name) ? `「${name}」已經有了，已直接勾選` : `已新增分類「${name}」`,
+    );
+    setNewCategory('');
+  };
 
   const toggleExistingImage = (src: string) =>
     setExistingImages((list) =>
@@ -397,8 +418,9 @@ export default function SpotFormDialog({
           <div>
             <span className={label}>分類 <span className="text-red-500">*</span></span>
             <div className="flex flex-wrap gap-1.5">
-              {categories.map((cat) => {
+              {[...new Set([...categories, ...draft.categories])].map((cat) => {
                 const active = draft.categories.includes(cat);
+                const isNew = !categories.includes(cat);
                 return (
                   <button
                     key={cat}
@@ -411,10 +433,41 @@ export default function SpotFormDialog({
                     }`}
                   >
                     {cat}
+                    {isNew && <span className="ml-1 opacity-60">新</span>}
                   </button>
                 );
               })}
             </div>
+
+            <div className="flex gap-1.5 mt-2">
+              <input
+                className={`${input} flex-1`}
+                placeholder="新增分類，例如：咖啡廳"
+                value={newCategory}
+                maxLength={12}
+                onChange={(e) => {
+                  setNewCategory(e.target.value);
+                  setCategoryHint(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCategory();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={addCategory}
+                disabled={!newCategory.trim()}
+                className="shrink-0 px-3 rounded-md text-sm border border-line
+                           hover:bg-neutral-100 dark:hover:bg-neutral-700
+                           disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                新增
+              </button>
+            </div>
+            {categoryHint && <p className="text-[11px] text-muted mt-1">{categoryHint}</p>}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-3">

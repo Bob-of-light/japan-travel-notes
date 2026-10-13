@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { buildIndex } from '../utils/buildIndex';
 import type { IndexMode, SpotsData } from '../types';
 import IndexTree from './IndexTree';
-import { SearchIcon } from './icons';
+import { SearchIcon, SlidersIcon } from './icons';
 
 interface SidebarProps {
   data: SpotsData;
@@ -14,6 +14,7 @@ interface SidebarProps {
   onSelect: (spotId: string) => void;
   editable: boolean;
   onCreate: () => void;
+  onManageCategories: () => void;
 }
 
 export default function Sidebar({
@@ -26,6 +27,7 @@ export default function Sidebar({
   onSelect,
   editable,
   onCreate,
+  onManageCategories,
 }: SidebarProps) {
   const tree = useMemo(() => buildIndex(data, mode, keyword), [data, mode, keyword]);
 
@@ -86,8 +88,19 @@ export default function Sidebar({
         )}
       </div>
 
-      <div className="px-3 py-2 border-t border-line text-[11px] text-muted shrink-0">
-        共 {tree.total} 個景點
+      <div className="px-3 py-2 border-t border-line flex items-center justify-between gap-2 shrink-0">
+        <span className="text-[11px] text-muted">共 {tree.total} 個景點</span>
+        <button
+          type="button"
+          onClick={onManageCategories}
+          disabled={!editable}
+          title={editable ? '新增、重新命名或刪除分類' : '唯讀模式：本機開啟 dev.bat 才能變更'}
+          className="inline-flex items-center gap-1 text-[11px] text-muted
+                     hover:text-current transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <SlidersIcon className="w-3.5 h-3.5" />
+          管理分類
+        </button>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useSpots } from './hooks/useSpots';
 import { useTheme } from './hooks/useTheme';
 import { collectStationHints } from './utils/links';
 import type { IndexMode, Spot } from './types';
+import CategoryManager from './components/CategoryManager';
 import Header from './components/Header';
 import PinDialog from './components/PinDialog';
 import Sidebar from './components/Sidebar';
@@ -10,7 +11,10 @@ import SpotDetail from './components/SpotDetail';
 import SpotFormDialog from './components/SpotFormDialog';
 
 export default function App() {
-  const { data, editable, editMode, loading, error, unlock, updateSpot, addSpot, saveSettings } = useSpots();
+  const {
+    data, editable, editMode, loading, error, unlock,
+    updateSpot, addSpot, saveSettings, renameCategory, deleteCategory, createCategory,
+  } = useSpots();
   const { resolved, setPreference } = useTheme();
 
   const [mode, setMode] = useState<IndexMode>('category');
@@ -18,6 +22,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Spot | null>(null);
   const [creating, setCreating] = useState(false);
+  const [managingCategories, setManagingCategories] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [askingPin, setAskingPin] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -116,6 +121,7 @@ export default function App() {
               onSelect={handleSelect}
               editable={editable}
               onCreate={() => guardEditable(() => setCreating(true))}
+              onManageCategories={() => guardEditable(() => setManagingCategories(true))}
             />
           )}
         </aside>
@@ -164,6 +170,27 @@ export default function App() {
             await handleSaveSpot(spot);
             setCreating(false);
             setEditing(null);
+          }}
+        />
+      )}
+
+      {managingCategories && (
+        <CategoryManager
+          categories={data.categories}
+          spots={data.spots}
+          editable={editable}
+          onCancel={() => setManagingCategories(false)}
+          onRename={async (from, to) => {
+            await renameCategory(from, to);
+            setToast(`分類已改名為「${to.trim()}」`);
+          }}
+          onDelete={async (name) => {
+            await deleteCategory(name);
+            setToast(`已刪除分類「${name}」`);
+          }}
+          onCreate={async (name) => {
+            await createCategory(name.trim());
+            setToast(`已新增分類「${name.trim()}」`);
           }}
         />
       )}

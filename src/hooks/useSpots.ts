@@ -39,11 +39,22 @@ export function useSpots() {
     setEditable(true);
   }, []);
 
-  const persist = useCallback(async (next: SpotsData, message?: string) => {
-    const saved = await saveSpots(next, message);
-    setData(saved);
-    return saved;
-  }, []);
+  const persist = useCallback(
+    async (next: SpotsData, message?: string) => {
+      // 把景點用到、但主清單還沒有的分類補進去（新增與修改都會經過這裡）
+      const categories = [...next.categories];
+      for (const spot of next.spots) {
+        for (const cat of spot.categories) {
+          if (!categories.includes(cat)) categories.push(cat);
+        }
+      }
+
+      const saved = await saveSpots({ ...next, categories }, message);
+      setData(saved);
+      return saved;
+    },
+    [],
+  );
 
   const updateSpot = useCallback(
     async (spot: Spot, message?: string) => {
@@ -61,11 +72,7 @@ export function useSpots() {
       if (data.spots.some((s) => s.id === spot.id)) {
         throw new Error(`景點 id 重複：${spot.id}`);
       }
-      const categories = [...data.categories];
-      for (const cat of spot.categories) {
-        if (!categories.includes(cat)) categories.push(cat);
-      }
-      const next: SpotsData = { ...data, categories, spots: [...data.spots, spot] };
+      const next: SpotsData = { ...data, spots: [...data.spots, spot] };
       return persist(next, message ?? `新增「${spot.name}」`);
     },
     [data, persist],
@@ -79,5 +86,73 @@ export function useSpots() {
     [data, persist],
   );
 
-  return { data, editable, editMode, loading, error, unlock, updateSpot, addSpot, saveSettings };
+  /** 只把分類加進主清單，不建立任何景點 */
+  const createCategory = useCallback(
+    async (name: string) => {
+      if (!name) throw new Error('分類名稱不能空白');
+      if (name.length > 12) throw new Error('分類名稱請控制在 12 個字以內');
+      if (data.categories.includes(name)) throw new Error(`「${name}」已經存在了`);
+
+      const next: SpotsData = { ...data, categories: [...data.categories, name] };
+      return persist(next, `新增分類「${name}」`);
+    },
+    [data, persist],
+  );
+
+  /** 重新命名分類：主清單與所有景點一起改 */
+  const renameCategory = useCallback(
+    async (from: string, to: string) => {
+      const name = to.trim();
+      if (!name) throw new Error('分類名稱不能空白');
+      if (name.length > 12) throw new Error('分類名稱請控制在 12 個字以內');
+      if (name === from) return;
+      if (data.categories.includes(name)) throw new Error(`「${name}」已經存在了`);
+
+      const next: SpotsData = {
+        ...data,
+        categories: data.categories.map((c) => (c === from ? name : c)),
+        spots: data.spots.map((s) =>
+          s.categories.includes(from)
+            ? { ...s, categories: s.categories.map((c) => (c === from ? name : c)) }
+            : s,
+        ),
+      };
+      return persist(next, `分類「${from}」改名為「${name}」`);
+    },
+    [data, persist],
+  );
+
+  /** 刪除分類：主清單與所有景點上的標籤一起移除 */
+  const deleteCategory = useCallback(
+    async (name: string) => {
+      const affected = data.spots.filter((s) => s.categories.includes(name)).length;
+
+      const next: SpotsData = {
+        ...data,
+        categories: data.categories.filter((c) => c !== name),
+        spots: data.spots.map((s) =>
+          s.categories.includes(name)
+            ? { ...s, categories: s.categories.filter((c) => c !== name) }
+            : s,
+        ),
+      };
+      return persist(next, `刪除分類「${name}」（影響 ${affected} 個景點）`);
+    },
+    [data, persist],
+  );
+
+  return {
+    data,
+    editable,
+    editMode,
+    loading,
+    error,
+    unlock,
+    updateSpot,
+    addSpot,
+    saveSettings,
+    createCategory,
+    renameCategory,
+    deleteCategory,
+  };
 }
