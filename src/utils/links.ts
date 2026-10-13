@@ -2,6 +2,13 @@ import type { Spot, TransportLeg } from '../types';
 
 const enc = encodeURIComponent;
 
+/** 把 public/ 下的相對路徑轉成可用的網址（考慮 GitHub Pages 的 base 路徑） */
+export function assetUrl(src: string): string {
+  if (/^https?:\/\//i.test(src) || src.startsWith('data:')) return src;
+  const base = import.meta.env.BASE_URL ?? '/';
+  return `${base}${src.replace(/^\//, '')}`;
+}
+
 export function mapEmbedUrl(spot: Spot): string {
   const q = spot.mapQuery || spot.nameJa || spot.name || spot.address || '';
   const zoom = 16;

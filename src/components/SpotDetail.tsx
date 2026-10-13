@@ -1,5 +1,6 @@
 import { mapSearchUrl } from '../utils/links';
 import type { Spot } from '../types';
+import ImageGallery from './ImageGallery';
 import MapEmbed from './MapEmbed';
 import TransportList from './TransportList';
 import { ExternalIcon, PencilIcon, PinIcon } from './icons';
@@ -118,6 +119,13 @@ export default function SpotDetail({ spot, editable, onEdit }: SpotDetailProps) 
           <p className="text-[11px] text-muted pt-1">最後更新：{spot.updatedAt}</p>
         )}
       </section>
+
+      {spot.images && spot.images.length > 0 && (
+        <section className="space-y-3">
+          <h3 className="text-sm font-semibold tracking-wide text-muted">照片</h3>
+          <ImageGallery images={spot.images} spotName={spot.name} />
+        </section>
+      )}
     </article>
   );
 }

@@ -50,6 +50,10 @@ npm install
       "hours": "平日 11:00-20:00／土日祝 10:00-20:00",
       "closed": "無休",
       "description": "第一段。\n\n第二段（中間空一行就會分段顯示）。",
+      "images": [
+        { "src": "images/super-potato/1.jpg", "caption": "一樓的卡帶牆" },
+        { "src": "images/super-potato/2.jpg", "caption": "" }
+      ],
       "transport": [
         {
           "mode": "JR",                  // JR／地下鉄／巴士／遊覽船…
@@ -75,6 +79,35 @@ npm install
 - 一個景點可以同時屬於多個分類（例如一家店既是「吃好料」也是「壓馬路」），
   兩種索引模式下都會出現
 - 交通可以登錄任意多組路線，每組都會自動產生查詢連結
+
+## 照片
+
+照片放在 `public/images/<景點 id>/`，資料檔只需要記相對路徑。
+
+**新增照片的流程**
+
+1. 把照片放進 `_incoming/<景點 id>/`（檔名不用改，資料夾名要等於景點的 `id`）
+2. 執行：
+
+   ```
+   powershell -ExecutionPolicy Bypass -File scripts\prepare-images.ps1
+   ```
+
+3. 腳本會自動完成：縮圖到最大邊 1600px、轉成 JPEG 品質 82、**去掉手機照片的
+   EXIF／GPS 資訊**、依序命名為 `1.jpg` `2.jpg`…，並更新 `spots.json`
+
+手機原圖一張 2-5MB，壓縮後約 250-400KB。40 張照片壓縮後大約 10-16MB，
+對 GitHub 倉庫來說是很小的量。`_incoming/` 已加進 `.gitignore`，
+原始照片不會進版本庫，只有 `public/images/` 裡的成品會。
+
+**在網頁上微調**
+
+編輯視窗裡可以改照片說明、移除照片。圖片本身要新增或刪除檔案，
+請走上面的腳本流程。
+
+**部署提醒**
+
+上傳 GitHub Pages 時，`public\images\` 必須一起勾選，否則手機上會看到破圖。
 
 ## 交通連結從哪來
 

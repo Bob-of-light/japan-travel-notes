@@ -11,6 +11,12 @@ export interface TransportLeg {
   note?: string;
 }
 
+export interface SpotImage {
+  /** 相對於 public/ 的路徑，例如 images/super-potato/1.jpg */
+  src: string;
+  caption?: string;
+}
+
 export interface Spot {
   id: string;
   name: string;
@@ -25,6 +31,7 @@ export interface Spot {
   closed?: string;
   description?: string;
   transport?: TransportLeg[];
+  images?: SpotImage[];
   updatedAt?: string;
 }
 

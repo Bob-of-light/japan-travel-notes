@@ -1,6 +1,7 @@
 node_modules/
 dist/
 *.tsbuildinfo
+_incoming/
 public/data/spots.backup.json
 *.local
 .DS_Store

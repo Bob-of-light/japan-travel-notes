@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { Spot, SpotsData, TransportLeg } from '../types';
+import { assetUrl } from '../utils/links';
+import type { Spot, SpotImage, SpotsData, TransportLeg } from '../types';
 import { CloseIcon, SaveIcon } from './icons';
 
 interface EditSpotDialogProps {
@@ -61,6 +62,16 @@ export default function EditSpotDialog({
         : [...d.categories, cat],
     }));
 
+  const patchImage = (index: number, changes: Partial<SpotImage>) =>
+    setDraft((d) => {
+      const images = [...(d.images ?? [])];
+      images[index] = { ...images[index], ...changes };
+      return { ...d, images };
+    });
+
+  const removeImage = (index: number) =>
+    setDraft((d) => ({ ...d, images: (d.images ?? []).filter((_, i) => i !== index) }));
+
   const handleSave = async () => {
     setBusy(true);
     setError(null);
@@ -73,6 +84,7 @@ export default function EditSpotDialog({
         transport: (draft.transport ?? []).filter(
           (leg) => leg.fromStation || leg.toStation || leg.note || leg.line,
         ),
+        images: (draft.images ?? []).filter((image) => image.src),
         updatedAt: today(),
       };
       await onSave(cleaned);
@@ -351,6 +363,37 @@ export default function EditSpotDialog({
               onChange={(e) => patch({ description: e.target.value })}
             />
           </div>
+
+          {(draft.images?.length ?? 0) > 0 && (
+            <div className="space-y-2">
+              <span className={label}>照片（可修改說明或移除）</span>
+              {draft.images!.map((image, i) => (
+                <div
+                  key={image.src}
+                  className="flex items-center gap-3 rounded-lg border border-line bg-raised p-2"
+                >
+                  <img
+                    src={assetUrl(image.src)}
+                    alt=""
+                    className="h-14 w-14 shrink-0 rounded object-cover bg-neutral-200 dark:bg-neutral-800"
+                  />
+                  <input
+                    className={input}
+                    placeholder="照片說明（可留空）"
+                    value={image.caption ?? ''}
+                    onChange={(e) => patchImage(i, { caption: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="shrink-0 px-2 py-1 text-xs text-red-600 dark:text-red-400 hover:underline"
+                  >
+                    移除
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {!editable && (
             <p className="text-xs text-red-600 dark:text-red-400">
