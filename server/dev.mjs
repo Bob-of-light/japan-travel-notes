@@ -6,7 +6,10 @@ import { openWhenReady } from './open-browser.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const API_PORT = 3001;
+// 必須和 vite.config.ts 的 base 一致
+const BASE_PATH = '/japan-travel-notes/';
 const VITE_PORT = 5173;
+const VITE_URL = `http://localhost:${VITE_PORT}${BASE_PATH}`;
 const IS_WIN = process.platform === 'win32';
 
 const children = [];
@@ -63,14 +66,14 @@ process.on('SIGTERM', () => shutdown());
 run('api', process.execPath, [path.join(ROOT, 'server', 'server.mjs')], '36', { NO_OPEN: '1' });
 run('vite', IS_WIN ? 'npx.cmd' : 'npx', ['vite'], '35');
 
-openWhenReady(`http://localhost:${VITE_PORT}/`).then((opened) => {
+openWhenReady(VITE_URL).then((opened) => {
   if (!opened) {
     console.log('');
-    console.log(`  Vite 好像沒有在 ${VITE_PORT} 埠啟動，請手動開啟 http://localhost:${VITE_PORT}`);
+    console.log(`  Vite 好像沒有在 ${VITE_PORT} 埠啟動，請手動開啟 ${VITE_URL}`);
   }
 });
 
 console.log('');
-console.log(`  開發模式啟動中，瀏覽器會自動開啟 http://localhost:${VITE_PORT}`);
+console.log(`  開發模式啟動中，瀏覽器會自動開啟 ${VITE_URL}`);
 console.log('  關閉這個視窗即可停止');
 console.log('');

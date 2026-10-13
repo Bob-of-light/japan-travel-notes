@@ -10,8 +10,13 @@
 | `dev.bat` | **開發模式**：邊改邊看，開 http://localhost:5173，改完自動重新整理 |
 | `build.bat` | 打包成 `dist/`，只負責建置 |
 | `start.bat` | 建置 + 啟動伺服器，開 http://localhost:3001 |
+| `package-for-upload.bat` | 上傳到 GitHub Pages 的步驟說明與檔案清單 |
 
 日常開發請用 `dev.bat`。要給別人看或放在電腦上跑時用 `start.bat`。
+
+> 因為要部署到 GitHub Pages，路徑帶 `/japan-travel-notes/` 前綴。
+> `dev.bat` 與 `start.bat` 的伺服器都會自動處理這個前綴，
+> `http://localhost:5173/` 和 `http://localhost:5173/japan-travel-notes/` 都能開。
 
 第一次使用請先執行一次：
 
@@ -20,6 +25,50 @@ npm install
 ```
 
 > 只用到 Node.js 內建模組，沒有安裝任何額外程式。
+
+## 在網頁上新增景點
+
+左側索引最上面的 **＋ 新增景點**。只有四個必填欄位：
+
+| 欄位 | 說明 |
+| --- | --- |
+| 名稱 | 你打 |
+| 地點 | 下拉選既有地名，或直接打新的 |
+| 分類 | 點一下選，至少一個 |
+| 介紹 | 你打，之後旅遊時看 |
+
+其他欄位都是選填，會自動幫你搞定：
+
+**Google Maps 連結（選填但強烈建議）**
+在手機上用 Google Maps 分享 →「複製連結」，貼進欄位。系統會自動：
+
+1. 抓出座標（`maps.app.goo.gl` 短網址會自動跟隨轉址）
+2. 反查日文地址填入地址欄位（可自由修改，自動填入的會標示提醒）
+3. 從網址帶出店名與日文名
+
+不貼連結也能存，地圖會用「名稱＋地名」讓 Google 自己搜尋（實測可行，
+但同名店可能找錯）。地址來源是 OpenStreetMap 的 Nominatim 免費服務，
+**只有在地圖上被標記過的地方查得到**，查不到就留空手動打。
+
+**不顯示地圖**：勾選後該景點完全不出現地圖（用於已歇業、暫時找不到位置等）。
+
+**交通**：不用填。設定頁首的出發地後，每個景點會自動產生從出發地前往的
+Google 乘車規劃與 Yahoo!乘換連結。想寫詳細路線（搭哪條線、幾分鐘）再選填。
+
+**照片**：直接選檔上傳，瀏覽器端會先縮圖（最大邊 1600px、JPEG 品質 82）
+再去除手機照片的 EXIF／GPS 才上傳，一個景點最多 6 張。
+
+## 出發地
+
+頁首的 **📍 按鈕**。設定之後，每個景點的「交通方式」會多出一張卡片：
+
+```
+從  上野站  到  駿河屋 秋葉原ゲーム館
+[Google 路線]  [Yahoo! 乘換（即時到站）]
+```
+
+出發地存在 `spots.json` 的 `settings.origin`，所以電腦和手機看到的是同一個。
+輸入框有 datalist 會帶出資料中出現過的車站名。
 
 ## 資料放在哪
 
@@ -136,13 +185,53 @@ npm install
 ## 唯讀模式
 
 若網站是部署在 GitHub Pages 這類純靜態環境，沒有後端可以存檔，
-頁面會顯示「唯讀模式」並停用編輯按鈕，資料改由直接編輯
-`public/data/spots.json` 再重新部署。
+頁面會顯示「唯讀模式」並停用編輯與新增按鈕。
 
-## 部署（之後再做）
+## 部署到 GitHub Pages
 
-驗收 OK 後要上傳 GitHub Pages 時，需要補三個東西，屆時再說：
+網址：<https://bob-of-light.github.io/japan-travel-notes/>
 
-1. `vite.config.ts` 加 `base: '/<repo 名稱>/'`
-2. 新增 `.github/workflows/deploy.yml`
-3. 新增 `package-for-upload.bat`
+`vite.config.ts` 的 `base` 與 `server/server.mjs` 的 `BASE` 必須一致，
+改倉庫名稱時兩個地方都要跟著改。
+
+**首次部署**
+
+1. 在 <https://github.com/new> 建立倉庫
+   - 名稱：`japan-travel-notes`
+   - 可見性：**Public**（免費 Pages 方案必須公開）
+   - 不要勾「Add a README file」
+2. 執行 `build.bat` 確認建置沒有錯誤
+3. 開啟 <https://github.com/bob-of-light/japan-travel-notes/upload/main>
+4. 在專案資料夾按 Ctrl 選取 20 個項目拖到頁面上（清單見
+   `package-for-upload.bat`）
+5. 捲到最下面按 Commit changes
+6. 等 1～2 分鐘
+
+> **不打包 zip。** GitHub 的網頁上傳不會自動解壓縮 zip，
+> 直接把資料夾和檔案拖上去就好。
+
+**上傳後必查**
+
+| 檢查 | 缺少會怎樣 |
+| --- | --- |
+| `.github\workflows\deploy.yml` | 不會自動部署，網址 404 |
+| `public\data\spots.json` | 沒有任何景點 |
+| `public\images\*.jpg` | 照片破圖 |
+
+dot 開頭的檔案在拖曳時最容易被漏掉，務必確認。
+
+如果一直沒有部署：Settings → Pages → Source 選 **GitHub Actions**。
+
+**之後每次更新**
+
+```
+dev.bat  →  在網頁上新增／修改景點 →  存檔
+build.bat  →  確認沒有錯誤
+開 /upload/main  →  重新拖 20 個項目  →  Commit changes  →  等 1～2 分鐘
+```
+
+線上版本是唯讀的，所以**新增與修改都要在本機完成再上傳**。
+
+> 想改成用 `git push` 會更省事（不用每次重新拖檔），
+> 但本機與 GitHub 的歷史已經分岔（首次是網頁上傳），
+> 需要的話再說。

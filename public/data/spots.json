@@ -1,6 +1,9 @@
 {
+  "settings": {
+    "origin": "上野站"
+  },
   "version": 1,
-  "updatedAt": "2026-10-13T05:36:07.196Z",
+  "updatedAt": "2026-10-13T06:30:37.229Z",
   "categories": [
     "收電玩",
     "買模型",
@@ -128,6 +131,23 @@
         }
       ],
       "updatedAt": "2026-10-13"
+    },
+    {
+      "id": "spot-mv6af3okg2c5",
+      "name": "駿河屋 秋葉原ゲーム館",
+      "area": "秋葉原",
+      "categories": [
+        "收電玩"
+      ],
+      "nameJa": "駿河屋 秋葉原ゲーム館",
+      "address": "東京都千代田区外神田3-15-4 2階",
+      "description": "駿河屋電玩店\n收售中古遊戲軟體",
+      "transport": [],
+      "updatedAt": "2026-10-13",
+      "hours": "平日：11:00~21:00",
+      "closed": "無",
+      "phone": "03-3258-7096",
+      "website": "https://www.instagram.com/surugaya_game/"
     }
   ]
 }

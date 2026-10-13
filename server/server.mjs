@@ -14,6 +14,13 @@ const DIST_DIR = path.join(ROOT, 'dist');
 const IMAGES_DIR = path.join(ROOT, 'public', 'images');
 const PORT = Number(process.env.PORT || 3001);
 
+/**
+ * GitHub Pages 的部署路徑，必須和 vite.config.ts 的 base 一致。
+ * 本機伺服器會自動把這個前綴剝掉，所以 http://localhost:3001/
+ * 和 https://<user>.github.io/japan-travel-notes/ 都能正常運作。
+ */
+const BASE = process.env.BASE_PATH ?? '/japan-travel-notes/';
+
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const SAFE_ID = /^[a-z0-9][a-z0-9_-]{0,63}$/i;
 const ALLOWED_MAP_HOSTS = /(^|\.)(google\.[a-z.]{2,6}|goo\.gl)$/i;
@@ -191,8 +198,16 @@ async function serveStatic(req, res) {
   }
 
   const url = new URL(req.url, `http://${req.headers.host}`);
-  const decoded = decodeURIComponent(url.pathname);
-  let filePath = path.join(DIST_DIR, decoded);
+  let pathname = decodeURIComponent(url.pathname);
+
+  // 剝掉 GitHub Pages 的 base 前綴，讓本機也能用同一份 build
+  if (BASE !== '/' && pathname.startsWith(BASE)) {
+    pathname = '/' + pathname.slice(BASE.length);
+  } else if (BASE !== '/' && pathname === BASE.slice(0, -1)) {
+    pathname = '/';
+  }
+
+  let filePath = path.join(DIST_DIR, pathname);
 
   if (!filePath.startsWith(DIST_DIR)) {
     res.writeHead(403).end('Forbidden');
