@@ -13,25 +13,35 @@ if %errorlevel% neq 0 goto :failBuild
 echo      建置沒有錯誤。
 
 echo.
-echo  [2/4] 整理變更內容...
+echo  [2/4] 儲存本機變更...
 git add -A
 set "HASCHANGE="
 git diff --cached --quiet
 if errorlevel 1 set "HASCHANGE=1"
 
-if not defined HASCHANGE goto :push
-echo      有檔案變更。
+if defined HASCHANGE goto :hasChange
+echo      本機沒有需要儲存的變更。
+goto :sync
 
+:hasChange
+echo      有檔案變更。
 echo.
 set /p "MSG=請描述這次更新（直接按 Enter 用今天的時間）："
 if "%MSG%"=="" set "MSG=更新 %DATE% %TIME:~0,5%"
-echo.
-echo  [3/4] 儲存變更： %MSG%
 git commit -m "%MSG%"
 if %errorlevel% neq 0 goto :failCommit
-goto :push
+echo      已儲存。
 
-:push
+:sync
+echo.
+echo  [3/4] 抓取線上最新內容...
+echo      （你在網頁上編輯過的景點也會一起帶回來）
+git fetch origin
+if %errorlevel% neq 0 goto :failFetch
+git rebase origin/main
+if %errorlevel% neq 0 goto :failRebase
+echo      本機與線上已同步。
+
 echo.
 echo  [4/4] 上傳到 GitHub...
 set "FORCE="
@@ -57,6 +67,19 @@ goto :end
 :failCommit
 echo.
 echo    儲存變更失敗。
+goto :end
+
+:failFetch
+echo.
+echo    無法連線到 GitHub，請確認網路或重新登入。
+goto :end
+
+:failRebase
+echo.
+echo    本機和線上的資料打架了（多半是同一個景點兩邊都改過）。
+echo    這個畫面請截圖給我，資料沒有損壞。
+echo    若畫面停在 rebasing 狀態，執行這個指令即可復原：
+echo        git rebase --abort
 goto :end
 
 :failPush
