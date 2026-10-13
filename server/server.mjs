@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { openBrowser } from './open-browser.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -180,6 +181,23 @@ const server = http.createServer(async (req, res) => {
   await serveStatic(req, res);
 });
 
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error('');
+    console.error(`[ryoko] 連接埠 ${PORT} 已經被占用。`);
+    console.error('');
+    console.error('  可能是 dev.bat / start.bat 已經開著了。');
+    console.error('  請先關掉那個黑色的終端機視窗，再重新執行。');
+    console.error('');
+    console.error(`  或者指定其他連接埠： set PORT=3002 && npm start`);
+    console.error('');
+    process.exit(1);
+  }
+  throw err;
+});
+
 server.listen(PORT, () => {
-  console.log(`[ryoko] API 伺服器啟動： http://localhost:${PORT}`);
+  const url = `http://localhost:${PORT}`;
+  console.log(`[ryoko] API 伺服器啟動： ${url}`);
+  openBrowser(url);
 });

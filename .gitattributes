@@ -1,0 +1,2 @@
+# 批次檔必須保持 CRLF，否則 cmd.exe 會解析錯誤
+*.bat text eol=crlf

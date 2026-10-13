@@ -1,17 +1,18 @@
 @echo off
 cd /d "%~dp0"
-echo Building æ—¥æœ¬æ—…éŠç­†è¨˜...
+echo Building ¤é¥»®È¹Cµ§°O...
 call npm run build
 if %errorlevel% neq 0 (
     echo.
-    echo Build å¤±æ•—ï¼Œè«‹ä¿®æ­£éŒ¯èª¤å¾Œé‡è©¦
+    echo Build ¥¢±Ñ¡A½Ğ­×¥¿¿ù»~«á­«¸Õ
     pause
     exit /b
 )
 echo.
-echo Build å®Œæˆï¼å•Ÿå‹•ä¼ºæœå™¨...
-echo è«‹é–‹å•Ÿ http://localhost:3001
-echo é—œé–‰é€™å€‹è¦–çª—å°±æœƒåœæ­¢ã€‚
+echo Build §¹¦¨¡I±Ò°Ê¦øªA¾¹...
+echo ÂsÄı¾¹·|¦Û°Ê¶}±Ò http://localhost:3001
+echo ­Y¨S¦Û°Ê¶}±Ò¡A½Ğ¤â°Ê½Æ»s¸Óºô§}¨ìÂsÄı¾¹¡C
+echo Ãö³¬³o­Óµøµ¡´N·|°±¤î¡C
 echo.
 npm start
 pause

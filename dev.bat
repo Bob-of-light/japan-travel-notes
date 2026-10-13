@@ -1,8 +1,9 @@
 @echo off
 cd /d "%~dp0"
-echo å•Ÿå‹•é–‹ç™¼æ¨¡å¼ï¼ˆVite + API ä¼ºæœå™¨ï¼‰...
-echo è«‹é–‹å•Ÿ http://localhost:5173
-echo é—œé–‰é€™å€‹è¦–çª—å°±æœƒåœæ­¢ã€‚
+echo ±Ò°Ê¶}µo¼Ò¦¡¡]Vite + API ¦øªA¾¹¡^...
+echo ÂsÄý¾¹·|¦Û°Ê¶}±Ò http://localhost:5173
+echo ­Y¨S¦Û°Ê¶}±Ò¡A½Ð¤â°Ê½Æ»s¸Óºô§}¨ìÂsÄý¾¹¡C
+echo Ãö³¬³o­Óµøµ¡´N·|°±¤î¡C
 echo.
 npm run dev
 pause

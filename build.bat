@@ -1,12 +1,13 @@
 @echo off
 cd /d "%~dp0"
-echo Building æ—¥æœ¬æ—…éŠç­†è¨˜...
+echo Building ¤é¥»®È¹Cµ§°O...
 call npm run build
 if %errorlevel% neq 0 (
-    echo Build å¤±æ•—ï¼Œè«‹ä¿®æ­£éŒ¯èª¤å¾Œé‡è©¦
+    echo.
+    echo Build ¥¢±Ñ¡A½Ğ­×¥¿¿ù»~«á­«¸Õ
     pause
     exit /b
 )
 echo.
-echo Build å®Œæˆï¼æ¥ä¸‹ä¾†åŸ·è¡Œ start.bat å³å¯å•Ÿå‹•ã€‚
+echo Build §¹¦¨¡I±µ¤U¨Ó°õ¦æ start.bat §Y¥i±Ò°Ê¡C
 pause
