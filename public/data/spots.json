@@ -190,10 +190,10 @@
         "訪聖地"
       ],
       "nameJa": "ミカド",
-      "mapQuery": "35.7127351,139.6272371",
+      "mapQuery": "35.712766,139.7031339",
       "hours": "10:00–23:30",
       "description": "各種大型框體的集合地",
-      "address": "https://www.google.com/maps/search/%E9%AB%98%E7%94%B0%E9%A6%AC%E5%A0%B4+%E9%9B%BB%E7%8E%A9/@35.7127351,139.7034548,14z?entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+      "address": "〒169-0075 東京都新宿区高田馬場三丁目",
       "transport": [],
       "images": [
         {
@@ -201,7 +201,7 @@
           "caption": ""
         }
       ],
-      "updatedAt": "2026-10-13"
+      "updatedAt": "2026-10-14"
     }
   ]
 }
