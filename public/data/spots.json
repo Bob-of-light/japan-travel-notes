@@ -202,6 +202,20 @@
         }
       ],
       "updatedAt": "2026-10-14"
+    },
+    {
+      "id": "spot-mv7fpm2tmvwy",
+      "name": "台場Gundam Base",
+      "area": "台場",
+      "categories": [
+        "買模型",
+        "探店去"
+      ],
+      "address": "日本〒135-0064 Tokyo, Koto City, Aomi, 1",
+      "hours": "11:00~20:00",
+      "description": "就是Gundam Base",
+      "transport": [],
+      "updatedAt": "2026-10-14"
     }
   ]
 }
