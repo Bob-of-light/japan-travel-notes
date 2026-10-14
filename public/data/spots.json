@@ -216,6 +216,19 @@
       "description": "就是Gundam Base",
       "transport": [],
       "updatedAt": "2026-10-14"
+    },
+    {
+      "id": "spot-mv7fyqdgl08f",
+      "name": "東京都都廳展望台",
+      "area": "新宿",
+      "categories": [
+        "賞美景"
+      ],
+      "hours": "南：0930~2200，北：0930~1730",
+      "closed": "每月第2及第4個星期一",
+      "description": "東京都都廳展望台，45F",
+      "transport": [],
+      "updatedAt": "2026-10-14"
     }
   ]
 }
