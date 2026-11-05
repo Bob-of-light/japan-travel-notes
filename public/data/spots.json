@@ -229,6 +229,21 @@
       "description": "東京都都廳展望台，45F",
       "transport": [],
       "updatedAt": "2026-10-14"
+    },
+    {
+      "id": "spot-mw2vvkwf1vii",
+      "name": "TAMIYA PLAMODEL Factory Tokyo",
+      "area": "新橋",
+      "categories": [
+        "買模型",
+        "探店去"
+      ],
+      "address": "東京都港區新橋 4-3-1 新虎 安田大廈 1 樓105-0004",
+      "hours": "平日（週一至週五）11:00 - 20:00； 週六、週日及公眾假日 10:00 - 19:00",
+      "website": "https://www.tamiya-plamodelfactory.co.jp/",
+      "description": "TAMIYA的模型大本營",
+      "transport": [],
+      "updatedAt": "2026-11-05"
     }
   ]
 }
