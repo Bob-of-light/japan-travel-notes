@@ -258,6 +258,17 @@
       "transport": [],
       "updatedAt": "2026-11-18",
       "hours": "開放時間：09:00-17:00； 售票時間：平日 / 9:00~16:00"
+    },
+    {
+      "id": "spot-mwlfy2rofn5q",
+      "name": "台鐵-草嶺古道",
+      "area": "福隆",
+      "categories": [
+        "台灣輕旅行"
+      ],
+      "description": "台鐵\n台北->福隆->草嶺古道->大里->台北",
+      "transport": [],
+      "updatedAt": "2026-11-18"
     }
   ]
 }
