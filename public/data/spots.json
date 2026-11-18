@@ -12,7 +12,8 @@
     "壓馬路",
     "尋祕境",
     "訪聖地",
-    "探店去"
+    "探店去",
+    "台灣輕旅行"
   ],
   "spots": [
     {
@@ -244,6 +245,17 @@
       "description": "TAMIYA的模型大本營",
       "transport": [],
       "updatedAt": "2026-11-05"
+    },
+    {
+      "id": "spot-mwleq5mnbmre",
+      "name": "台鐵-八斗子",
+      "area": "八斗子",
+      "categories": [
+        "台灣輕旅行"
+      ],
+      "website": "https://www.youtube.com/watch?v=xk1GHU7eMy4",
+      "transport": [],
+      "updatedAt": "2026-11-18"
     }
   ]
 }
