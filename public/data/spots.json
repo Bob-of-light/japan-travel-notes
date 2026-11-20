@@ -269,6 +269,17 @@
       "description": "台鐵\n台北->福隆->草嶺古道->大里->台北",
       "transport": [],
       "updatedAt": "2026-11-18"
+    },
+    {
+      "id": "spot-mwoakmfpluzz",
+      "name": "捷運-金色水岸自行車道",
+      "area": "淡水",
+      "categories": [
+        "台灣輕旅行"
+      ],
+      "description": "捷運紅樹林->輕軌台北海大->UBIKE->水管公園->金色水岸自行車道->沙崙->漁人碼頭",
+      "transport": [],
+      "updatedAt": "2026-11-20"
     }
   ]
 }
