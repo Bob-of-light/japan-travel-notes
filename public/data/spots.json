@@ -291,6 +291,17 @@
       "description": "南港捷運2號出口->生技隧道->國家生技研究園區登山步道->南港捷運站",
       "transport": [],
       "updatedAt": "2026-11-22"
+    },
+    {
+      "id": "spot-mwrd6zzti6if",
+      "name": "捷運-川端橋",
+      "area": "古亭",
+      "categories": [
+        "台灣輕旅行"
+      ],
+      "description": "古亭捷運站->紀州庵->古亭河濱公園自行車道->川端橋->永和",
+      "transport": [],
+      "updatedAt": "2026-11-22"
     }
   ]
 }
