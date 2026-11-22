@@ -301,7 +301,8 @@
       ],
       "description": "古亭捷運站->紀州庵->古亭河濱公園自行車道->川端橋->永和",
       "transport": [],
-      "updatedAt": "2026-11-22"
+      "updatedAt": "2026-11-22",
+      "address": "https://www.google.com/maps/d/viewer?entry=yt&mid=12ryqzZsWjR6E-QCcikK7MCZHCiuz0Kc&ll=25.020473907120667%2C121.51837574873421&z=17"
     }
   ]
 }
