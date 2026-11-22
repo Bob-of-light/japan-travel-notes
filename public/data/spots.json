@@ -303,6 +303,17 @@
       "transport": [],
       "updatedAt": "2026-11-22",
       "address": "https://www.google.com/maps/d/viewer?entry=yt&mid=12ryqzZsWjR6E-QCcikK7MCZHCiuz0Kc&ll=25.020473907120667%2C121.51837574873421&z=17"
+    },
+    {
+      "id": "spot-mwre171i88jg",
+      "name": "台鐵-海線五寶",
+      "area": "談文",
+      "categories": [
+        "台灣輕旅行"
+      ],
+      "description": "談文->大山->新埔->日南->追分\n五座日本時代的木製車站",
+      "transport": [],
+      "updatedAt": "2026-11-22"
     }
   ]
 }
